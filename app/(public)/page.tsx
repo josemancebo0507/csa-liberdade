@@ -90,7 +90,7 @@ export default async function HomePage() {
             margin: '0 auto',
           }}
         >
-          Portal de serviços da área. Consulte grupos, reuniões, subcomitês e eventos — sem precisar de cadastro.
+          Portal de serviços da área. Consulte grupos, reuniões, subcomitês e eventos.
         </p>
       </div>
 
