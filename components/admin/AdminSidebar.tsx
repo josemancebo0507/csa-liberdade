@@ -29,9 +29,8 @@ export default function AdminSidebar() {
       {/* Logo */}
       <div className="p-4 border-b border-slate-100">
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center">
-            <span className="text-white font-bold text-xs">NA</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/logo.png" alt="CSA Liberdade" className="object-contain flex-shrink-0 h-10 w-auto" />
           <div className="leading-tight">
             <div className="font-semibold text-slate-900 text-sm">CSA Liberdade</div>
             <div className="text-xs text-slate-400">Administração</div>

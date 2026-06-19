@@ -34,8 +34,9 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-12 h-12 rounded-xl bg-blue-600 flex items-center justify-center mx-auto mb-3">
-            <span className="text-white font-bold text-lg">NA</span>
+          <div className="flex justify-center mb-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/logo.png" alt="CSA Liberdade" className="object-contain h-24 w-auto mx-auto" />
           </div>
           <h1 className="text-xl font-bold text-slate-900">CSA Liberdade</h1>
           <p className="text-slate-500 text-sm mt-1">Área administrativa</p>
