@@ -1,8 +1,45 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { Users, Layers, CalendarDays, UserCheck } from 'lucide-react'
+import HojeSection from '@/components/public/HojeSection'
 
 export const revalidate = 300
+
+async function getHoje() {
+  const agora = new Date()
+  const agoraBrasilia = new Date(agora.getTime() - 3 * 60 * 60 * 1000)
+  const hoje = agoraBrasilia.toISOString().split('T')[0]
+  const diaSemana = ['domingo','segunda','terca','quarta','quinta','sexta','sabado'][agoraBrasilia.getDay()]
+
+  const supabase = await createClient()
+  const [rGruposR, rSubcomitesR, eventosR] = await Promise.all([
+    supabase
+      .from('reunioes_grupo')
+      .select('id, horario, tipo, formato, endereco_link, grupos(nome, cidade, bairro)')
+      .eq('status', 'ativo')
+      .eq('dia_semana', diaSemana)
+      .order('horario'),
+    supabase
+      .from('reunioes_subcomite')
+      .select('id, horario, formato, local_link, subcomites(nome, sigla)')
+      .eq('status', 'ativo')
+      .or(`and(recorrente.eq.true,dia_semana.eq.${diaSemana}),and(recorrente.eq.false,data_especifica.eq.${hoje})`)
+      .order('horario'),
+    supabase
+      .from('eventos')
+      .select('id, titulo, horario, local_link, tipos_evento(nome), grupos(nome), subcomites(nome, sigla)')
+      .eq('status', 'publicado')
+      .eq('data_evento', hoje)
+      .order('horario'),
+  ])
+
+  return {
+    hoje,
+    reunioesGrupo:     (rGruposR.data     ?? []) as any[],
+    reunioesSubcomite: (rSubcomitesR.data ?? []) as any[],
+    eventos:           (eventosR.data     ?? []) as any[],
+  }
+}
 
 async function getStats() {
   const supabase = await createClient()
@@ -23,12 +60,12 @@ async function getStats() {
 const navCards = [
   { href: '/grupos',    icon: Users,        title: 'Grupos',       desc: 'Encontre grupos de NA, horários de reuniões e servidores de cada grupo.'        },
   { href: '/subcomites',icon: Layers,       title: 'Subcomitês',   desc: 'Conheça os subcomitês da área, suas reuniões e quem está servindo.'              },
-  { href: '/mesa',      icon: UserCheck,    title: 'Mesa da Área', desc: 'Veja quem ocupa os encargos administrativos do CSA Liberdade.'                   },
+  { href: '/dados-da-area', icon: UserCheck, title: 'Dados da Área', desc: 'Dashboard, servidores e atas das reuniões de serviço do CSA Liberdade.'          },
   { href: '/eventos',   icon: CalendarDays, title: 'Eventos',      desc: 'Próximos eventos de grupos, subcomitês e da área.'                               },
 ]
 
 export default async function HomePage() {
-  const stats = await getStats()
+  const [stats, hj] = await Promise.all([getStats(), getHoje()])
 
   const statCards = [
     { label: 'Grupos ativos',         value: stats.grupos,     icon: Users        },
@@ -155,6 +192,14 @@ export default async function HomePage() {
           ))}
         </div>
       </div>
+
+      {/* ── O que eu posso fazer hoje ─────────────────────── */}
+      <HojeSection
+        hoje={hj.hoje}
+        reunioesGrupo={hj.reunioesGrupo}
+        reunioesSubcomite={hj.reunioesSubcomite}
+        eventos={hj.eventos}
+      />
 
       {/* ── Citação — 8º Conceito ─────────────────────────── */}
       <div

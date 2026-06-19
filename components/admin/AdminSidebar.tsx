@@ -8,7 +8,7 @@ const links = [
   { href: '/admin',           label: 'Painel',     icon: Home,          exact: true },
   { href: '/admin/grupos',    label: 'Grupos',     icon: Users },
   { href: '/admin/subcomites',label: 'Subcomitês', icon: Layers },
-  { href: '/admin/mesa',      label: 'Mesa da Área', icon: UserCheck },
+  { href: '/admin/dados-da-area', label: 'Dados da Área', icon: UserCheck },
   { href: '/admin/eventos',   label: 'Eventos',    icon: CalendarDays },
   { href: '/admin/usuarios',  label: 'Usuários',   icon: UserCog },
 ]
