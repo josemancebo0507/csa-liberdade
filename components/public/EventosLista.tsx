@@ -18,14 +18,13 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
   const [filtroResp, setFiltroResp] = useState('')
   const [filtroTipo, setFiltroTipo] = useState('')
 
-  /* ---------- opções derivadas dos dados ---------- */
+  /* ── Opções derivadas dos dados ─────────────────────── */
 
   const opcoesResponsavel = useMemo(() => {
     const opcoes: { value: string; label: string }[] = [
       { value: '', label: 'Todos os responsáveis' },
     ]
     const vistos = new Set<string>()
-
     for (const e of eventos) {
       if (e.responsavel === 'area' && !vistos.has('area')) {
         vistos.add('area')
@@ -34,10 +33,7 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
         const key = `subcomite:${e.subcomites.nome}`
         if (!vistos.has(key)) {
           vistos.add(key)
-          const label = e.subcomites.sigla
-            ? `Subcomitê ${e.subcomites.sigla}`
-            : `Subcomitê: ${e.subcomites.nome}`
-          opcoes.push({ value: key, label })
+          opcoes.push({ value: key, label: e.subcomites.sigla ? `Subcomitê ${e.subcomites.sigla}` : `Subcomitê: ${e.subcomites.nome}` })
         }
       } else if (e.responsavel === 'grupo' && e.grupos?.nome) {
         const key = `grupo:${e.grupos.nome}`
@@ -47,7 +43,6 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
         }
       }
     }
-
     return opcoes
   }, [eventos])
 
@@ -65,19 +60,17 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
     return opcoes
   }, [eventos])
 
-  /* ---------- filtragem ---------- */
+  /* ── Filtragem ──────────────────────────────────────── */
 
   const eventosFiltrados = useMemo(() => {
     return eventos.filter(e => {
       if (filtroResp) {
         if (filtroResp === 'area' && e.responsavel !== 'area') return false
         if (filtroResp.startsWith('grupo:')) {
-          const nome = filtroResp.slice(6)
-          if (e.responsavel !== 'grupo' || e.grupos?.nome !== nome) return false
+          if (e.responsavel !== 'grupo' || e.grupos?.nome !== filtroResp.slice(6)) return false
         }
         if (filtroResp.startsWith('subcomite:')) {
-          const nome = filtroResp.slice(10)
-          if (e.responsavel !== 'subcomite' || e.subcomites?.nome !== nome) return false
+          if (e.responsavel !== 'subcomite' || e.subcomites?.nome !== filtroResp.slice(10)) return false
         }
       }
       if (filtroTipo && e.tipos_evento?.nome !== filtroTipo) return false
@@ -87,18 +80,18 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
 
   const filtroAtivo = filtroResp !== '' || filtroTipo !== ''
 
-  /* ---------- estado vazio global ---------- */
+  /* ── Empty state global ─────────────────────────────── */
 
   if (eventos.length === 0) {
     return (
       <div className="card text-center py-12">
-        <CalendarDays size={32} className="mx-auto mb-3" style={{ color: '#cbd5e1' }} />
-        <p style={{ color: '#94a3b8' }}>Nenhum evento programado no momento.</p>
+        <CalendarDays size={32} className="mx-auto mb-3" style={{ color: 'var(--csa-border)' }} />
+        <p style={{ color: 'var(--csa-text-3)' }}>Nenhum evento programado no momento.</p>
       </div>
     )
   }
 
-  /* ---------- render ---------- */
+  /* ── Render ─────────────────────────────────────────── */
 
   return (
     <div>
@@ -106,24 +99,23 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
       <div
         className="mb-6 rounded-2xl"
         style={{
-          background: '#eef2fb',
-          border: '1px solid #e6e9f5',
+          background: 'var(--csa-tint)',
+          border: '1px solid var(--csa-tint-border)',
           padding: '16px 20px',
+          transition: 'background 0.25s, border-color 0.25s',
         }}
       >
-        {/* Cabeçalho do painel */}
+        {/* Cabeçalho */}
         <div className="flex items-center gap-2 mb-4">
-          <SlidersHorizontal size={14} style={{ color: '#3f5aa6' }} />
-          <span className="text-sm font-medium" style={{ color: '#3f5aa6' }}>
+          <SlidersHorizontal size={14} style={{ color: 'var(--csa-accent)' }} />
+          <span className="text-sm font-medium" style={{ color: 'var(--csa-accent)' }}>
             Filtrar eventos
           </span>
           {filtroAtivo && (
             <button
               onClick={() => { setFiltroResp(''); setFiltroTipo('') }}
               className="ml-auto flex items-center gap-1 text-xs transition-colors"
-              style={{ color: '#94a3b8' }}
-              onMouseEnter={e => (e.currentTarget.style.color = '#475569')}
-              onMouseLeave={e => (e.currentTarget.style.color = '#94a3b8')}
+              style={{ color: 'var(--csa-text-3)' }}
             >
               <X size={12} /> Limpar filtros
             </button>
@@ -133,17 +125,13 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
         {/* Selects */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: '#64748b' }}
-            >
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--csa-text-2)' }}>
               Responsável
             </label>
             <select
               className="form-select form-input text-sm"
               value={filtroResp}
               onChange={e => setFiltroResp(e.target.value)}
-              style={{ backgroundColor: filtroResp ? '#ffffff' : undefined }}
             >
               {opcoesResponsavel.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -152,17 +140,13 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
           </div>
 
           <div>
-            <label
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: '#64748b' }}
-            >
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--csa-text-2)' }}>
               Tipo de evento
             </label>
             <select
               className="form-select form-input text-sm"
               value={filtroTipo}
               onChange={e => setFiltroTipo(e.target.value)}
-              style={{ backgroundColor: filtroTipo ? '#ffffff' : undefined }}
             >
               {opcoesTipo.map(o => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -171,9 +155,9 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
           </div>
         </div>
 
-        {/* Contador de resultados */}
+        {/* Contador */}
         {filtroAtivo && (
-          <p className="mt-3 text-xs" style={{ color: '#94a3b8' }}>
+          <p className="mt-3 text-xs" style={{ color: 'var(--csa-text-3)' }}>
             {eventosFiltrados.length === 0
               ? 'Nenhum evento corresponde aos filtros selecionados.'
               : `${eventosFiltrados.length} de ${eventos.length} evento${eventos.length !== 1 ? 's' : ''}`}
@@ -181,17 +165,17 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
         )}
       </div>
 
-      {/* Lista de eventos */}
+      {/* Lista ou empty state filtrado */}
       {eventosFiltrados.length === 0 ? (
         <div className="card text-center py-10">
-          <CalendarDays size={28} className="mx-auto mb-3" style={{ color: '#cbd5e1' }} />
-          <p className="text-sm" style={{ color: '#94a3b8' }}>
+          <CalendarDays size={28} className="mx-auto mb-3" style={{ color: 'var(--csa-border)' }} />
+          <p className="text-sm" style={{ color: 'var(--csa-text-3)' }}>
             Nenhum evento corresponde aos filtros selecionados.
           </p>
           <button
             onClick={() => { setFiltroResp(''); setFiltroTipo('') }}
             className="mt-3 text-sm transition-colors"
-            style={{ color: '#3f5aa6' }}
+            style={{ color: 'var(--csa-accent)' }}
           >
             Limpar filtros
           </button>
@@ -205,21 +189,24 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
               'CSA Liberdade'
 
             return (
-              <div key={e.id} className="card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md" style={{ borderColor: '#ebedf0' }}>
+              <div
+                key={e.id}
+                className="card transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md"
+              >
                 <div className="flex gap-4">
-                  {/* Data */}
+                  {/* Bloco de data */}
                   <div className="flex-shrink-0 w-14 text-center">
-                    <div className="text-2xl font-bold leading-none" style={{ color: '#3f5aa6' }}>
+                    <div className="text-2xl font-bold leading-none" style={{ color: 'var(--csa-accent)' }}>
                       {new Date(e.data_evento + 'T12:00:00').getDate().toString().padStart(2, '0')}
                     </div>
-                    <div className="text-xs uppercase tracking-wide mt-0.5" style={{ color: '#94a3b8' }}>
+                    <div className="text-xs uppercase tracking-wide mt-0.5" style={{ color: 'var(--csa-text-3)' }}>
                       {new Date(e.data_evento + 'T12:00:00').toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
                     </div>
                   </div>
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2 mb-1">
-                      <h2 className="font-semibold text-base leading-snug" style={{ color: '#1e293b' }}>
+                      <h2 className="font-semibold text-base leading-snug" style={{ color: 'var(--csa-text-1)' }}>
                         {e.titulo}
                       </h2>
                       {e.status === 'cancelado' && (
@@ -227,7 +214,7 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
                       )}
                     </div>
 
-                    <div className="text-sm capitalize mb-1" style={{ color: '#64748b' }}>
+                    <div className="text-sm capitalize mb-1" style={{ color: 'var(--csa-text-2)' }}>
                       {formatDate(e.data_evento)}
                       {e.horario && ` às ${e.horario.slice(0, 5)}`}
                     </div>
@@ -236,7 +223,7 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
                       {e.tipos_evento?.nome && (
                         <span
                           className="badge text-xs"
-                          style={{ background: '#eef2fb', color: '#3f5aa6' }}
+                          style={{ background: 'var(--csa-tint)', color: 'var(--csa-accent)' }}
                         >
                           {e.tipos_evento.nome}
                         </span>
@@ -247,14 +234,14 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
                     </div>
 
                     {e.local_link && (
-                      <div className="flex items-center gap-1 text-sm mt-2" style={{ color: '#64748b' }}>
+                      <div className="flex items-center gap-1 text-sm mt-2" style={{ color: 'var(--csa-text-2)' }}>
                         <MapPin size={13} />
                         <span>{e.local_link}</span>
                       </div>
                     )}
 
                     {e.descricao && (
-                      <p className="text-sm mt-2" style={{ color: '#64748b' }}>{e.descricao}</p>
+                      <p className="text-sm mt-2" style={{ color: 'var(--csa-text-2)' }}>{e.descricao}</p>
                     )}
 
                     {e.link_externo && (
@@ -263,7 +250,7 @@ export default function EventosLista({ eventos }: { eventos: any[] }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-sm mt-2 hover:underline"
-                        style={{ color: '#3f5aa6' }}
+                        style={{ color: 'var(--csa-accent)' }}
                       >
                         Ver cartaz / mais informações <ExternalLink size={12} />
                       </a>

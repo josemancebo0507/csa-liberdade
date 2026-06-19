@@ -13,24 +13,71 @@
   --font-sans: 'Inter', system-ui, sans-serif;
 }
 
-@layer base {
-  body {
-    background-color: #f8fafc;
-    color: #1e293b;
-    -webkit-font-smoothing: antialiased;
-    font-family: 'Inter', system-ui, sans-serif;
-  }
-  h1, h2, h3, h4 { font-weight: 600; color: #0f172a; }
+/* ─── Palette tokens ────────────────────────────────────── */
+:root {
+  --csa-bg:          #f5f6f8;
+  --csa-surface:     #ffffff;
+  --csa-border:      #ebedf0;
+  --csa-border-2:    #e2e8f0;
+  --csa-text-1:      #1e293b;
+  --csa-text-2:      #64748b;
+  --csa-text-3:      #94a3b8;
+  --csa-accent:      #3f5aa6;
+  --csa-tint:        #eef2fb;
+  --csa-tint-border: #e6e9f5;
+  --csa-hero-grad:   linear-gradient(160deg, #eef2fb 0%, #f4f1fa 100%);
+  --csa-logo-filter: none;
 }
 
+html.dark {
+  --csa-bg:          #0f172a;
+  --csa-surface:     #1e293b;
+  --csa-border:      #334155;
+  --csa-border-2:    #334155;
+  --csa-text-1:      #f1f5f9;
+  --csa-text-2:      #94a3b8;
+  --csa-text-3:      #475569;
+  --csa-accent:      #7c9ed9;
+  --csa-tint:        #1e2d4a;
+  --csa-tint-border: #2a3f70;
+  --csa-hero-grad:   linear-gradient(160deg, #1a2744 0%, #1e2d5a 100%);
+  --csa-logo-filter: brightness(0) invert(1);
+}
+
+/* ─── Base ──────────────────────────────────────────────── */
+@layer base {
+  body {
+    background-color: var(--csa-bg);
+    color: var(--csa-text-1);
+    -webkit-font-smoothing: antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: background-color 0.25s, color 0.25s;
+  }
+  h1, h2, h3, h4 { font-weight: 600; color: var(--csa-text-1); }
+}
+
+/* ─── Components ────────────────────────────────────────── */
 @layer components {
   .card {
-    background-color: white;
+    background-color: var(--csa-surface);
     border-radius: 0.75rem;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.08);
+    border: 1px solid var(--csa-border);
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06);
     padding: 1.25rem;
+    transition: background-color 0.25s, border-color 0.25s, box-shadow 0.2s;
   }
+
+  /* Nav link — hover via CSS var for dark mode compat */
+  .nav-link:hover {
+    background-color: var(--csa-tint);
+  }
+
+  /* Logo inversion for dark mode */
+  .hero-logo {
+    filter: var(--csa-logo-filter);
+    transition: filter 0.25s;
+  }
+
   .btn-primary {
     background-color: #2563eb; color: white; font-weight: 500;
     padding: 0.5rem 1rem; border-radius: 0.5rem; font-size: 0.875rem;
@@ -40,14 +87,18 @@
   }
   .btn-primary:hover { background-color: #1d4ed8; }
   .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
   .btn-secondary {
-    background-color: white; color: #374151; font-weight: 500;
+    background-color: var(--csa-surface);
+    color: var(--csa-text-1);
+    font-weight: 500;
     padding: 0.5rem 1rem; border-radius: 0.5rem;
-    border: 1px solid #e2e8f0; font-size: 0.875rem;
+    border: 1px solid var(--csa-border-2); font-size: 0.875rem;
     display: inline-flex; align-items: center; gap: 0.5rem;
     cursor: pointer; transition: background-color 0.15s; text-decoration: none;
   }
-  .btn-secondary:hover { background-color: #f8fafc; }
+  .btn-secondary:hover { background-color: var(--csa-tint); }
+
   .btn-danger {
     background-color: #fef2f2; color: #dc2626; font-weight: 500;
     padding: 0.5rem 1rem; border-radius: 0.5rem;
@@ -56,6 +107,7 @@
     cursor: pointer; transition: background-color 0.15s;
   }
   .btn-danger:hover { background-color: #fee2e2; }
+
   .badge {
     display: inline-flex; align-items: center;
     padding: 0.125rem 0.625rem; border-radius: 9999px;
@@ -66,21 +118,53 @@
   .badge-gray   { background-color: #f1f5f9; color: #475569; }
   .badge-red    { background-color: #fee2e2; color: #dc2626; }
   .badge-yellow { background-color: #fef9c3; color: #a16207; }
+
   .form-label {
     display: block; font-size: 0.875rem; font-weight: 500;
-    color: #374151; margin-bottom: 0.25rem;
+    color: var(--csa-text-2); margin-bottom: 0.25rem;
   }
   .form-input {
-    width: 100%; border-radius: 0.5rem; border: 1px solid #e2e8f0;
-    padding: 0.5rem 0.75rem; font-size: 0.875rem; color: #0f172a;
-    background-color: white; outline: none; transition: box-shadow 0.15s;
+    width: 100%; border-radius: 0.5rem;
+    border: 1px solid var(--csa-border-2);
+    padding: 0.5rem 0.75rem; font-size: 0.875rem;
+    color: var(--csa-text-1);
+    background-color: var(--csa-surface);
+    outline: none; transition: box-shadow 0.15s, background-color 0.25s, border-color 0.25s;
     font-family: inherit; box-sizing: border-box;
   }
   .form-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / 0.1); }
-  .form-input::placeholder { color: #94a3b8; }
+  .form-input::placeholder { color: var(--csa-text-3); }
   .form-select  { appearance: none; }
   .form-textarea { resize: vertical; }
-  .page-title   { font-size: 1.5rem; font-weight: 700; color: #0f172a; }
-  .section-title { font-size: 1.125rem; font-weight: 600; color: #0f172a; }
-  .divider      { border-top: 1px solid #e2e8f0; }
+  .page-title   { font-size: 1.5rem; font-weight: 700; color: var(--csa-text-1); }
+  .section-title { font-size: 1.125rem; font-weight: 600; color: var(--csa-text-1); }
+  .divider      { border-top: 1px solid var(--csa-border); }
+}
+
+/* ─── Dark mode structural overrides ───────────────────── */
+
+/* Badges — dark */
+html.dark .badge-blue   { background-color: #1e3254; color: #7c9ed9; }
+html.dark .badge-green  { background-color: #1a3028; color: #4ade80; }
+html.dark .badge-gray   { background-color: #273549; color: #94a3b8; }
+html.dark .badge-red    { background-color: #3b1a1a; color: #f87171; }
+html.dark .badge-yellow { background-color: #3a2e1a; color: #fbbf24; }
+
+/* Buttons — dark */
+html.dark .btn-danger {
+  background-color: #3b1a1a;
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+html.dark .btn-danger:hover { background-color: #4c2020; }
+
+/* Admin sidebar */
+html.dark aside {
+  background-color: #172033;
+  border-color: #1e293b;
+}
+
+/* Footer */
+html.dark footer {
+  border-color: var(--csa-border);
 }
