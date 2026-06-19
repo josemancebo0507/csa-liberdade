@@ -44,7 +44,6 @@ export default function UsuarioForm({ grupos, subcomites }: Props) {
     }
 
     router.push('/admin/usuarios')
-    router.refresh()
   }
 
   return (

@@ -58,14 +58,12 @@ export default function GrupoForm({ grupo }: Props) {
     }
 
     router.push('/admin/grupos')
-    router.refresh()
   }
 
   async function handleInativar() {
     if (!confirm('Inativar este grupo?')) return
     await supabase.from('grupos').update({ status: 'inativo', atualizado_em: new Date().toISOString() }).eq('id', grupo!.id)
     router.push('/admin/grupos')
-    router.refresh()
   }
 
   return (

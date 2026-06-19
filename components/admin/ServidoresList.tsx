@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Plus, Pencil, X, Check, User } from 'lucide-react'
@@ -20,6 +20,15 @@ const emptyForm = {
   status:          'ativo',
 }
 
+function maskPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  if (!digits) return ''
+  if (digits.length <= 2) return `(${digits}`
+  if (digits.length <= 3) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3)}`
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 3)} ${digits.slice(3, 7)}-${digits.slice(7)}`
+}
+
 export default function ServidoresList({ tipo, contextoId, vinculos, tiposEncargo }: Props) {
   const supabase = createClient()
   const router = useRouter()
@@ -29,6 +38,10 @@ export default function ServidoresList({ tipo, contextoId, vinculos, tiposEncarg
   const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(false)
 
+  useEffect(() => {
+    setLista(vinculos.filter(v => v.status !== 'inativo'))
+  }, [vinculos])
+
   function setF(field: string, value: any) {
     setForm(f => ({ ...f, [field]: value }))
   }
@@ -37,7 +50,7 @@ export default function ServidoresList({ tipo, contextoId, vinculos, tiposEncarg
     setEditando(v.id)
     setForm({
       nome_servico:    v.servidores?.nome_servico    ?? '',
-      contato:         v.servidores?.contato         ?? '',
+      contato:         maskPhone(v.servidores?.contato ?? ''),
       contato_publico: v.servidores?.contato_publico ?? false,
       tipo_encargo_id: v.tipo_encargo_id             ?? '',
       status:          v.status                      ?? 'ativo',
@@ -124,8 +137,15 @@ export default function ServidoresList({ tipo, contextoId, vinculos, tiposEncarg
         </div>
 
         <div>
-          <label className="form-label text-xs">Contato (telefone ou e-mail)</label>
-          <input className="form-input text-sm" value={form.contato} onChange={e => setF('contato', e.target.value)} placeholder="Opcional" />
+          <label className="form-label text-xs">Telefone</label>
+          <input
+            className="form-input text-sm"
+            value={form.contato}
+            onChange={e => setF('contato', maskPhone(e.target.value))}
+            placeholder="(11) 9 9999-9999"
+            type="tel"
+            inputMode="numeric"
+          />
         </div>
 
         <div className="flex items-center gap-2">

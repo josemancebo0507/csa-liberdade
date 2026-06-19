@@ -39,7 +39,6 @@ export default function SubcomiteForm({ subcomite }: { subcomite?: Subcomite }) 
     }
     if (error) { setErro('Erro ao salvar.'); setLoading(false); return }
     router.push('/admin/subcomites')
-    router.refresh()
   }
 
   return (

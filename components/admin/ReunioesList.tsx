@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Plus, Pencil, X, Check } from 'lucide-react'
@@ -38,6 +38,10 @@ export default function ReunioesList({ tipo, contextoId, reunioes }: Props) {
   const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(false)
   const tabela = tipo === 'grupo' ? 'reunioes_grupo' : 'reunioes_subcomite'
+
+  useEffect(() => {
+    setLista(reunioes)
+  }, [reunioes])
 
   function setF(field: string, value: any) {
     setForm(f => ({ ...f, [field]: value }))

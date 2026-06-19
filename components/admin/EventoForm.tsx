@@ -64,7 +64,6 @@ export default function EventoForm({ evento, tiposEvento, grupos, subcomites }: 
 
     if (error) { setErro('Erro ao salvar: ' + error.message); setLoading(false); return }
     router.push('/admin/eventos')
-    router.refresh()
   }
 
   return (
