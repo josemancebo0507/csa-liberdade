@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js'
 
 // Cliente admin com service_role — pode criar usuários no Auth
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  'https://ehbosnplrsixaloivtbe.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVoYm9zbnBscnNpeGFsb2l2dGJlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTgxMTA2MCwiZXhwIjoyMDk3Mzg3MDYwfQ.Mx2dKHZUDA5NHjgY1QJnCTgnKOtSRyWjkwuXd_8lCJk',
   { auth: { autoRefreshToken: false, persistSession: false } }
 )
 
