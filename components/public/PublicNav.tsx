@@ -17,9 +17,7 @@ function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true)
-    const saved = localStorage.getItem('csa-theme')
-    const sys = window.matchMedia('(prefers-color-scheme: dark)').matches
-    setDark(saved === 'dark' || (saved === null && sys))
+    setDark(localStorage.getItem('csa-theme') === 'dark')
   }, [])
 
   function toggle() {
