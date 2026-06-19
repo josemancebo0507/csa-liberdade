@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [senha, setSenha] = useState('')
@@ -11,7 +13,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [erro, setErro] = useState('')
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
