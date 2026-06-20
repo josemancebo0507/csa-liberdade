@@ -24,12 +24,11 @@ async function getGruposGeocodificados() {
 
 export default async function MapaPage() {
   const grupos = await getGruposGeocodificados()
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? ''
 
   return (
     /* Escapa do max-w-5xl/px-4/py-8 do layout para mapa full-width */
     <div className="-mx-4 -mt-8" style={{ height: 'calc(100vh - 64px)' }}>
-      <MapaGrupos grupos={grupos} apiKey={apiKey} />
+      <MapaGrupos grupos={grupos} />
     </div>
   )
 }
