@@ -29,6 +29,8 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-anon-key
 SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key
 ```
 
+> Nenhuma chave de API de mapas é necessária. O mapa usa OpenStreetMap (gratuito) e a geocodificação usa Nominatim (gratuita).
+
 ### 4. Rodar localmente
 ```bash
 npm install
@@ -40,6 +42,24 @@ npm run dev
 2. Importe na Vercel
 3. Adicione as 3 variáveis de ambiente
 4. Deploy
+
+## Mapa de grupos (`/mapa`)
+
+O mapa usa **Leaflet + react-leaflet** com tiles do **OpenStreetMap** (licença ODbL).
+Grupos precisam de coordenadas (`latitude`/`longitude`) na tabela `grupos` para aparecer no mapa.
+
+### Geocodificação em lote
+
+Para geocodificar todos os grupos que ainda não têm coordenadas:
+
+```bash
+npx tsx scripts/geocodificar-grupos.ts
+```
+
+O script usa a API **Nominatim** (OSM, gratuita, sem chave). O delay de 1100ms entre
+chamadas respeita o limite de 1 req/s da API.
+
+Novos grupos são geocodificados automaticamente ao salvar no painel admin.
 
 ## Páginas públicas
 | Rota | Descrição |
