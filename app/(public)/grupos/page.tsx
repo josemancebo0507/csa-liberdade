@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { DIA_SEMANA_LABEL, FORMATO_LABEL } from '@/lib/types'
-import { MapPin, Clock, Users } from 'lucide-react'
+import { MapPin, Clock, Users, Map } from 'lucide-react'
 import Link from 'next/link'
 
 export const revalidate = 300
@@ -20,11 +20,16 @@ export default async function GruposPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="page-title mb-1">Grupos</h1>
-        <p className="text-sm" style={{ color: 'var(--csa-text-2)' }}>
-          {grupos.length} grupo{grupos.length !== 1 ? 's' : ''} ativo{grupos.length !== 1 ? 's' : ''} na área
-        </p>
+      <div className="flex items-center justify-between gap-4 mb-8">
+        <div>
+          <h1 className="page-title mb-1">Grupos</h1>
+          <p className="text-sm" style={{ color: 'var(--csa-text-2)' }}>
+            {grupos.length} grupo{grupos.length !== 1 ? 's' : ''} ativo{grupos.length !== 1 ? 's' : ''} na área
+          </p>
+        </div>
+        <Link href="/mapa" className="btn-secondary flex-shrink-0">
+          <Map size={15} /> Ver mapa
+        </Link>
       </div>
 
       {grupos.length === 0 ? (

@@ -5,6 +5,24 @@ import { useRouter } from 'next/navigation'
 import { Save, Trash2 } from 'lucide-react'
 import type { Grupo } from '@/lib/types'
 
+async function geocodeEndereco(endereco: string, bairro: string, cidade: string) {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+  if (!key) return null
+  const addr = [endereco, bairro, cidade, 'Brasil'].filter(Boolean).join(', ')
+  if (!addr.trim()) return null
+  try {
+    const res = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addr)}&key=${key}`
+    )
+    const data = await res.json()
+    if (data.status === 'OK' && data.results[0]) {
+      const { lat, lng } = data.results[0].geometry.location
+      return { latitude: lat as number, longitude: lng as number }
+    }
+  } catch {}
+  return null
+}
+
 interface Props {
   grupo?: Grupo
 }
@@ -34,7 +52,16 @@ export default function GrupoForm({ grupo }: Props) {
     setLoading(true)
     setErro('')
 
-    const payload = {
+    const enderecoMudou =
+      form.endereco !== (grupo?.endereco ?? '') ||
+      form.bairro   !== (grupo?.bairro   ?? '') ||
+      form.cidade   !== (grupo?.cidade   ?? '')
+
+    const geo = enderecoMudou
+      ? await geocodeEndereco(form.endereco, form.bairro, form.cidade)
+      : null
+
+    const payload: Record<string, unknown> = {
       nome:        form.nome.trim(),
       cidade:      form.cidade.trim(),
       bairro:      form.bairro.trim() || null,
@@ -42,6 +69,10 @@ export default function GrupoForm({ grupo }: Props) {
       status:      form.status,
       observacoes: form.observacoes.trim() || null,
       atualizado_em: new Date().toISOString(),
+    }
+    if (geo) {
+      payload.latitude  = geo.latitude
+      payload.longitude = geo.longitude
     }
 
     let error

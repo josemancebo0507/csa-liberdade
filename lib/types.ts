@@ -15,6 +15,8 @@ export interface Grupo {
   endereco?: string
   status: StatusGeral
   observacoes?: string
+  latitude?: number | null
+  longitude?: number | null
   criado_em: string
   atualizado_em: string
 }
