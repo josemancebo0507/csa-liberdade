@@ -4,24 +4,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { Save, Trash2 } from 'lucide-react'
 import type { Grupo } from '@/lib/types'
-
-async function geocodeEndereco(endereco: string, bairro: string, cidade: string) {
-  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-  if (!key) return null
-  const addr = [endereco, bairro, cidade, 'Brasil'].filter(Boolean).join(', ')
-  if (!addr.trim()) return null
-  try {
-    const res = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addr)}&key=${key}`
-    )
-    const data = await res.json()
-    if (data.status === 'OK' && data.results[0]) {
-      const { lat, lng } = data.results[0].geometry.location
-      return { latitude: lat as number, longitude: lng as number }
-    }
-  } catch {}
-  return null
-}
+import { geocodificarEndereco } from '@/lib/geocoding'
 
 interface Props {
   grupo?: Grupo
@@ -41,7 +24,8 @@ export default function GrupoForm({ grupo }: Props) {
     observacoes: grupo?.observacoes ?? '',
   })
   const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
+  const [erro, setErro]   = useState('')
+  const [aviso, setAviso] = useState('')
 
   function set(field: string, value: string) {
     setForm(f => ({ ...f, [field]: value }))
@@ -51,15 +35,12 @@ export default function GrupoForm({ grupo }: Props) {
     e.preventDefault()
     setLoading(true)
     setErro('')
+    setAviso('')
 
     const enderecoMudou =
       form.endereco !== (grupo?.endereco ?? '') ||
       form.bairro   !== (grupo?.bairro   ?? '') ||
       form.cidade   !== (grupo?.cidade   ?? '')
-
-    const geo = enderecoMudou
-      ? await geocodeEndereco(form.endereco, form.bairro, form.cidade)
-      : null
 
     const payload: Record<string, unknown> = {
       nome:        form.nome.trim(),
@@ -70,9 +51,15 @@ export default function GrupoForm({ grupo }: Props) {
       observacoes: form.observacoes.trim() || null,
       atualizado_em: new Date().toISOString(),
     }
-    if (geo) {
-      payload.latitude  = geo.latitude
-      payload.longitude = geo.longitude
+
+    if (enderecoMudou) {
+      const geo = await geocodificarEndereco(form.endereco, form.bairro, form.cidade)
+      if (geo) {
+        payload.latitude  = geo.lat
+        payload.longitude = geo.lng
+      } else {
+        setAviso('Endereço não encontrado via OSM. O grupo será salvo sem localização no mapa.')
+      }
     }
 
     let error
@@ -133,7 +120,18 @@ export default function GrupoForm({ grupo }: Props) {
         <textarea className="form-textarea" rows={3} value={form.observacoes} onChange={e => set('observacoes', e.target.value)} />
       </div>
 
-      {erro && <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{erro}</div>}
+      {aviso && (
+        <div className="text-sm rounded-lg px-3 py-2"
+          style={{ background: '#fefce8', color: '#a16207', border: '1px solid #fde68a' }}>
+          {aviso}
+        </div>
+      )}
+      {erro && (
+        <div className="text-sm rounded-lg px-3 py-2"
+          style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+          {erro}
+        </div>
+      )}
 
       <div className="flex items-center gap-3 pt-2">
         <button type="submit" disabled={loading} className="btn-primary">
