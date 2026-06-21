@@ -8,13 +8,14 @@
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
  *
- * Respeita o limite de 1 req/s da Nominatim com delay de 1100ms entre chamadas.
+ * Tenta até 4 estratégias por grupo, respeitando o limite de 1 req/s da Nominatim.
  */
 
 import { createClient } from '@supabase/supabase-js'
+import { geocodificarEnderecoComFallback } from '../lib/geocoding'
 
-const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY!
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 if (!supabaseUrl || !serviceKey) {
   console.error('Defina NEXT_PUBLIC_SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no ambiente.')
@@ -22,30 +23,6 @@ if (!supabaseUrl || !serviceKey) {
 }
 
 const supabase = createClient(supabaseUrl, serviceKey)
-
-const USER_AGENT = 'CSA-Liberdade-Portal/1.0 (contato: sperancin.ads@gmail.com)'
-
-async function geocodificar(
-  endereco: string,
-  bairro: string,
-  cidade: string
-): Promise<{ lat: number; lng: number } | null> {
-  const query = [endereco, bairro, cidade, 'Brasil'].filter(Boolean).join(', ')
-  if (!query.trim()) return null
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1&countrycodes=br`,
-    { headers: { 'User-Agent': USER_AGENT } }
-  )
-  const data = await res.json()
-  if (Array.isArray(data) && data.length > 0) {
-    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) }
-  }
-  return null
-}
-
-function delay(ms: number) {
-  return new Promise(resolve => setTimeout(resolve, ms))
-}
 
 async function main() {
   const { data: grupos, error } = await supabase
@@ -66,8 +43,14 @@ async function main() {
 
   console.log(`\n${grupos.length} grupo(s) para geocodificar...\n`)
 
+  let ok = 0, falhou = 0
+
   for (const grupo of grupos) {
-    const geo = await geocodificar(grupo.endereco ?? '', grupo.bairro ?? '', grupo.cidade ?? '')
+    const geo = await geocodificarEnderecoComFallback(
+      grupo.endereco ?? '',
+      grupo.bairro   ?? '',
+      grupo.cidade   ?? ''
+    )
 
     if (geo) {
       const { error: upErr } = await supabase
@@ -81,17 +64,22 @@ async function main() {
 
       if (upErr) {
         console.error(`  ✗ ${grupo.nome} — erro ao salvar:`, upErr.message)
+        falhou++
       } else {
-        console.log(`  ✓ ${grupo.nome} → (${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)})`)
+        console.log(`  ✓ ${grupo.nome} → (${geo.lat.toFixed(5)}, ${geo.lng.toFixed(5)}) [${geo.estrategia}]`)
+        ok++
       }
     } else {
-      console.log(`  ✗ ${grupo.nome} — não encontrado (verifique o endereço)`)
+      console.log(`  ✗ ${grupo.nome} — não encontrado (revise o endereço)`)
+      console.log(`      endereco: "${grupo.endereco ?? ''}" | bairro: "${grupo.bairro ?? ''}" | cidade: "${grupo.cidade ?? ''}"`)
+      falhou++
     }
 
-    await delay(1100)
+    // Delay entre grupos para respeitar rate limit da Nominatim
+    await new Promise(r => setTimeout(r, 1100))
   }
 
-  console.log('\nConcluído.')
+  console.log(`\nConcluído: ${ok} geocodificado(s), ${falhou} falhou(aram).`)
 }
 
 main().catch(err => {

@@ -56,7 +56,7 @@ export default function MapaGruposInner({ grupos }: { grupos: GrupoPin[] }) {
         {grupos.map(g => (
           <Marker
             key={g.id}
-            position={[g.latitude, g.longitude]}
+            position={[Number(g.latitude), Number(g.longitude)]}
             icon={pinIcon}
             eventHandlers={{ click: (e) => { e.originalEvent.stopPropagation(); setSelected(g) } }}
           />
