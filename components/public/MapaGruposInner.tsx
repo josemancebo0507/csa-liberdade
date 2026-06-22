@@ -1,6 +1,6 @@
 'use client'
-import { useState, useMemo } from 'react'
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet'
+import { useState, useMemo, useEffect } from 'react'
+import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import Link from 'next/link'
@@ -36,8 +36,6 @@ function resumoReunioes(reunioes: ReuniaoInfo[]): string {
     .join(' · ')
 }
 
-// Improved pin: bullseye design with CSS drop-shadow
-// Created per-group so the same icon object is reused safely via useMemo
 function criarPinIcon(): L.DivIcon {
   return L.divIcon({
     html: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="34" viewBox="0 0 24 34"
@@ -58,11 +56,34 @@ function MapClickHandler({ onClose }: { onClose: () => void }) {
   return null
 }
 
-export default function MapaGruposInner({ grupos }: { grupos: GrupoPin[] }) {
-  const [selected, setSelected] = useState<GrupoPin | null>(null)
+// After the open/close animation (300ms), forces Leaflet to recalculate tile coverage
+function MapResizeHandler({ sheetOpen }: { sheetOpen: boolean }) {
+  const map = useMap()
+  useEffect(() => {
+    const t = setTimeout(() => map.invalidateSize(), 350)
+    return () => clearTimeout(t)
+  }, [sheetOpen, map])
+  return null
+}
 
-  // Single shared icon instance — avoids recreating L.divIcon on every render
-  const pinIcon = useMemo(() => criarPinIcon(), [])
+const SHEET_HEIGHT = 200
+
+export default function MapaGruposInner({ grupos }: { grupos: GrupoPin[] }) {
+  const [selected, setSelected]       = useState<GrupoPin | null>(null)
+  // Stays populated until the close animation finishes so the sheet never flashes empty
+  const [sheetContent, setSheetContent] = useState<GrupoPin | null>(null)
+
+  useEffect(() => {
+    if (selected) {
+      setSheetContent(selected)
+    } else {
+      const t = setTimeout(() => setSheetContent(null), 300)
+      return () => clearTimeout(t)
+    }
+  }, [selected])
+
+  const pinIcon  = useMemo(() => criarPinIcon(), [])
+  const sheetOpen = !!selected
 
   const center: [number, number] = grupos.length > 0
     ? [
@@ -71,108 +92,151 @@ export default function MapaGruposInner({ grupos }: { grupos: GrupoPin[] }) {
       ]
     : [-22.9056, -47.0608]
 
-  const resumo = selected ? resumoReunioes(selected.reunioes_grupo ?? []) : ''
+  const resumo = sheetContent ? resumoReunioes(sheetContent.reunioes_grupo ?? []) : ''
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <MapContainer
-        center={center}
-        zoom={grupos.length > 0 ? 12 : 11}
-        style={{ width: '100%', height: '100%' }}
-        zoomControl
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-        />
-        <MapClickHandler onClose={() => setSelected(null)} />
-        {grupos.map(g => (
-          <Marker
-            key={g.id}
-            position={[Number(g.latitude), Number(g.longitude)]}
-            icon={pinIcon}
-            eventHandlers={{
-              click: (e) => {
-                e.originalEvent.stopPropagation()
-                setSelected(g)
-              },
-            }}
-          />
-        ))}
-      </MapContainer>
 
-      {/* Info card — safe-area-aware bottom offset for iOS Safari */}
-      {selected && (
-        <div
-          style={{
-            position:     'absolute',
-            bottom:       'calc(env(safe-area-inset-bottom, 0px) + 16px)',
-            left:         16,
-            right:        16,
-            maxWidth:     400,
-            margin:       '0 auto',
-            background:   'var(--csa-surface)',
-            border:       '1px solid var(--csa-border)',
-            borderRadius: 16,
-            padding:      '16px 20px',
-            boxShadow:    '0 8px 32px rgba(0,0,0,0.15)',
-            animation:    'slideUp 0.18s ease-out',
-            zIndex:       1000,
-          }}
+      {/* ── Mapa ── encolhe pelo bottom para abrir espaço à sheet */}
+      <div style={{
+        position:   'absolute',
+        top: 0, left: 0, right: 0,
+        bottom:     sheetOpen ? SHEET_HEIGHT : 0,
+        transition: 'bottom 0.3s ease',
+      }}>
+        <MapContainer
+          center={center}
+          zoom={grupos.length > 0 ? 12 : 11}
+          style={{ width: '100%', height: '100%' }}
+          zoomControl
         >
-          {/* Nome + fechar */}
-          <div className="flex items-start justify-between gap-3 mb-2">
-            <div className="font-semibold text-base leading-snug" style={{ color: 'var(--csa-text-1)' }}>
-              {selected.nome}
-            </div>
-            <button
-              onClick={() => setSelected(null)}
-              className="flex-shrink-0 p-1 rounded-lg"
-              style={{ color: 'var(--csa-text-3)' }}
-              aria-label="Fechar"
-            >
-              <X size={18} />
-            </button>
-          </div>
+          <TileLayer
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+          />
+          <MapClickHandler onClose={() => setSelected(null)} />
+          <MapResizeHandler sheetOpen={sheetOpen} />
+          {grupos.map(g => (
+            <Marker
+              key={g.id}
+              position={[Number(g.latitude), Number(g.longitude)]}
+              icon={pinIcon}
+              eventHandlers={{
+                click: (e) => {
+                  e.originalEvent.stopPropagation()
+                  setSelected(g)
+                },
+              }}
+            />
+          ))}
+        </MapContainer>
+      </div>
 
-          {/* Endereço */}
-          {selected.endereco && (
-            <div className="flex items-start gap-1.5 mb-1">
-              <MapPin size={13} style={{ color: 'var(--csa-text-3)', flexShrink: 0, marginTop: 2 }} />
-              <span className="text-sm" style={{ color: 'var(--csa-text-2)' }}>
-                {selected.endereco}
+      {/* ── Bottom sheet ── sobe por baixo do mapa, nunca sobrepõe */}
+      <div style={{
+        position:   'absolute',
+        bottom: 0, left: 0, right: 0,
+        height:     sheetOpen ? SHEET_HEIGHT : 0,
+        overflow:   'hidden',
+        transition: 'height 0.3s ease',
+        background: 'var(--csa-surface)',
+        borderTop:  '1px solid var(--csa-border)',
+        boxShadow:  '0 -4px 16px rgba(0,0,0,0.08)',
+      }}>
+        {sheetContent && (
+          <div style={{
+            display:       'flex',
+            flexDirection: 'column',
+            height:        SHEET_HEIGHT,
+            padding:       '10px 16px 16px',
+            boxSizing:     'border-box',
+          }}>
+            {/* Handle visual */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+              <div style={{
+                width: 32, height: 4,
+                borderRadius: 2,
+                background: 'var(--csa-border)',
+              }} />
+            </div>
+
+            {/* Nome + fechar */}
+            <div style={{
+              display:        'flex',
+              alignItems:     'flex-start',
+              justifyContent: 'space-between',
+              gap:            12,
+              marginBottom:   4,
+            }}>
+              <span style={{
+                fontWeight:  600,
+                fontSize:    16,
+                lineHeight:  1.3,
+                color:       'var(--csa-text-1)',
+              }}>
+                {sheetContent.nome}
               </span>
+              <button
+                onClick={() => setSelected(null)}
+                aria-label="Fechar"
+                style={{
+                  flexShrink: 0,
+                  padding:    4,
+                  color:      'var(--csa-text-3)',
+                  background: 'none',
+                  border:     'none',
+                  cursor:     'pointer',
+                }}
+              >
+                <X size={18} />
+              </button>
             </div>
-          )}
 
-          {/* Cidade / bairro */}
-          <div className="text-xs mb-2" style={{ color: 'var(--csa-text-3)' }}>
-            {[selected.bairro, selected.cidade].filter(Boolean).join(', ')}
+            {/* Endereço */}
+            {sheetContent.endereco && (
+              <div style={{
+                display:      'flex',
+                alignItems:   'flex-start',
+                gap:          6,
+                marginBottom: 2,
+              }}>
+                <MapPin size={13} style={{ color: 'var(--csa-text-3)', flexShrink: 0, marginTop: 2 }} />
+                <span style={{ fontSize: 13, color: 'var(--csa-text-2)', lineHeight: 1.4 }}>
+                  {sheetContent.endereco}
+                </span>
+              </div>
+            )}
+
+            {/* Cidade / bairro */}
+            <div style={{
+              fontSize:     12,
+              color:        'var(--csa-text-3)',
+              marginBottom: resumo ? 6 : 0,
+            }}>
+              {[sheetContent.bairro, sheetContent.cidade].filter(Boolean).join(', ')}
+            </div>
+
+            {/* Horários */}
+            {resumo && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Clock size={12} style={{ color: 'var(--csa-text-3)', flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: 'var(--csa-text-2)' }}>{resumo}</span>
+              </div>
+            )}
+
+            {/* CTA — sempre na base da sheet */}
+            <div style={{ marginTop: 'auto' }}>
+              <Link
+                href={`/grupos/${sheetContent.id}`}
+                className="btn-primary w-full justify-center"
+                style={{ fontSize: 14 }}
+              >
+                Ver detalhes do grupo
+              </Link>
+            </div>
           </div>
-
-          {/* Reuniões ativas */}
-          {resumo && (
-            <div className="flex items-center gap-1.5 mb-3">
-              <Clock size={12} style={{ color: 'var(--csa-text-3)', flexShrink: 0 }} />
-              <span className="text-xs" style={{ color: 'var(--csa-text-2)' }}>{resumo}</span>
-            </div>
-          )}
-
-          <Link
-            href={`/grupos/${selected.id}`}
-            className="btn-secondary w-full justify-center text-sm"
-          >
-            Ver detalhes do grupo
-          </Link>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes slideUp {
-          from { transform: translateY(12px); opacity: 0; }
-          to   { transform: translateY(0);    opacity: 1; }
-        }
-      `}</style>
+        )}
+      </div>
     </div>
   )
 }
