@@ -50,13 +50,13 @@ export default async function GruposPage() {
               >
                 {/* Header: nome + badge ativo */}
                 <div className="flex items-start justify-between gap-4 mb-3">
-                  <div>
+                  <div className="min-w-0">
                     <h2 className="font-semibold text-base" style={{ color: 'var(--csa-text-1)' }}>
                       {grupo.nome}
                     </h2>
                     <div className="flex items-center gap-1 text-sm mt-0.5" style={{ color: 'var(--csa-text-2)' }}>
-                      <MapPin size={13} style={{ color: 'var(--csa-text-3)' }} />
-                      <span>{grupo.bairro ? `${grupo.bairro}, ` : ''}{grupo.cidade}</span>
+                      <MapPin size={13} style={{ color: 'var(--csa-text-3)', flexShrink: 0 }} />
+                      <span className="truncate">{grupo.bairro ? `${grupo.bairro}, ` : ''}{grupo.cidade}</span>
                     </div>
                   </div>
 
@@ -84,20 +84,21 @@ export default async function GruposPage() {
                     {reunioesAtivas.map((r: any) => (
                       <div
                         key={r.id}
-                        className="flex items-center justify-between px-3 py-2.5 rounded-[10px]"
+                        className="flex flex-col gap-1.5 px-3 py-2.5 rounded-[10px] sm:flex-row sm:items-center sm:justify-between"
                         style={{ background: 'var(--csa-bg)' }}
                       >
-                        <div className="flex items-center gap-2 text-sm min-w-0">
+                        {/* Dia e horário */}
+                        <div className="flex items-center gap-2 text-sm">
                           <Clock size={14} style={{ color: 'var(--csa-text-3)', flexShrink: 0 }} />
-                          <span className="font-medium truncate" style={{ color: 'var(--csa-text-1)' }}>
+                          <span className="font-medium" style={{ color: 'var(--csa-text-1)' }}>
                             {DIA_SEMANA_LABEL[r.dia_semana as keyof typeof DIA_SEMANA_LABEL]}
                           </span>
-                          <span className="flex-shrink-0" style={{ color: 'var(--csa-text-2)' }}>
+                          <span style={{ color: 'var(--csa-text-2)' }}>
                             às {r.horario.slice(0, 5)}
                           </span>
                         </div>
-                        <div className="flex gap-1.5 flex-shrink-0 ml-2">
-                          {/* Badge de formato */}
+                        {/* Badges: formato e tipo */}
+                        <div className="flex gap-1.5 pl-6 sm:pl-0">
                           {r.formato === 'presencial' ? (
                             <span className="badge" style={{ background: 'var(--csa-tint)', color: 'var(--csa-accent)' }}>
                               {FORMATO_LABEL[r.formato as keyof typeof FORMATO_LABEL]}
@@ -111,7 +112,6 @@ export default async function GruposPage() {
                               {FORMATO_LABEL[r.formato as keyof typeof FORMATO_LABEL]}
                             </span>
                           )}
-                          {/* Badge de tipo */}
                           <span className={r.tipo === 'aberta' ? 'badge badge-green' : 'badge badge-gray'}>
                             {r.tipo === 'aberta' ? 'Aberta' : 'Fechada'}
                           </span>
