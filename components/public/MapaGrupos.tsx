@@ -3,12 +3,14 @@ import dynamic from 'next/dynamic'
 import { Loader2 } from 'lucide-react'
 
 interface GrupoPin {
-  id:        string
-  nome:      string
-  cidade:    string | null
-  bairro:    string | null
-  latitude:  number
-  longitude: number
+  id:             string
+  nome:           string
+  cidade:         string | null
+  bairro:         string | null
+  endereco:       string | null
+  latitude:       number
+  longitude:      number
+  reunioes_grupo: { dia_semana: string; horario: string; status: string }[]
 }
 
 const MapaGruposInner = dynamic(

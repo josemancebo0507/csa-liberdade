@@ -7,7 +7,7 @@ async function getGruposGeocodificados() {
   const supabase = await createClient()
   const { data } = await supabase
     .from('grupos')
-    .select('id, nome, cidade, bairro, latitude, longitude')
+    .select('id, nome, cidade, bairro, endereco, latitude, longitude, reunioes_grupo(dia_semana, horario, status)')
     .eq('status', 'ativo')
     .not('latitude', 'is', null)
     .not('longitude', 'is', null)
@@ -17,8 +17,10 @@ async function getGruposGeocodificados() {
     nome: string
     cidade: string | null
     bairro: string | null
+    endereco: string | null
     latitude: number
     longitude: number
+    reunioes_grupo: { dia_semana: string; horario: string; status: string }[]
   }[]
 }
 
