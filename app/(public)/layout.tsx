@@ -1,4 +1,5 @@
 import PublicNav from '@/components/public/PublicNav'
+import ChatBot from '@/components/public/ChatBot'
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -12,6 +13,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <span className="mx-2">·</span>
         <a href="/admin" className="hover:text-slate-600 transition-colors">Área administrativa</a>
       </footer>
+      <ChatBot />
     </div>
   )
 }

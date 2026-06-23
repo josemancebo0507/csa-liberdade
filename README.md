@@ -61,6 +61,29 @@ chamadas respeita o limite de 1 req/s da API.
 
 Novos grupos são geocodificados automaticamente ao salvar no painel admin.
 
+## Chatbot IA
+
+O portal público inclui um chatbot flutuante que responde perguntas dos visitantes com base nos dados reais do banco.
+
+**Tecnologia:** [Groq API](https://console.groq.com) com modelo `llama3-70b-8192` (gratuito no plano Free).
+
+**Variável de ambiente necessária:**
+```
+GROQ_API_KEY=gsk_...
+```
+Adicionar em `.env.local` para desenvolvimento e nas variáveis de ambiente da Vercel para produção.
+
+**Como criar a chave:**
+1. Acesse [console.groq.com](https://console.groq.com)
+2. Crie uma conta gratuita
+3. Vá em **API Keys → Create API Key**
+4. Copie a chave e adicione como `GROQ_API_KEY`
+
+**Privacidade e segurança:**
+- O chatbot é **somente leitura** — nunca modifica dados
+- Contatos de servidores com `contato_publico = false` são removidos dos dados antes de serem enviados ao modelo
+- A chave Groq é usada apenas no servidor (Route Handler), nunca exposta ao navegador
+
 ## Páginas públicas
 | Rota | Descrição |
 |------|-----------|
