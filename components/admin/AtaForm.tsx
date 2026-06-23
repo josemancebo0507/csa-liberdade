@@ -331,6 +331,7 @@ export default function AtaForm({ grupos, grupoDeEscolhaId, encargosIniciais, sa
       ])
 
       setModal(false)
+      fetch('/api/cache/invalidar', { method: 'POST' }).catch(() => {})
       setSucesso({
         id: ataId,
         numero: Number(numeroReuniao),
