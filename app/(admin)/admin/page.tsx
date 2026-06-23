@@ -1,5 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server'
-import { Users, Layers, CalendarDays, UserCheck } from 'lucide-react'
+import { Users, Layers, CalendarDays, UserCheck, BookOpen } from 'lucide-react'
 import Link from 'next/link'
 
 async function getStats() {
@@ -49,18 +49,19 @@ export default async function AdminDashboard() {
 
       <div className="grid sm:grid-cols-2 gap-4">
         {[
-          { href: '/admin/grupos',     label: 'Gerenciar grupos',     desc: 'Cadastre grupos, reuniões e servidores',      icon: Users },
+          { href: '/admin/atas/nova',  label: 'Registrar ata de reunião', desc: 'Registre a ata da reunião de hoje',           icon: BookOpen, highlight: true },
+          { href: '/admin/grupos',     label: 'Gerenciar grupos',         desc: 'Cadastre grupos, reuniões e servidores',      icon: Users },
           { href: '/admin/subcomites', label: 'Gerenciar subcomitês', desc: 'Gerencie subcomitês e seus servidores',       icon: Layers },
           { href: '/admin/mesa',       label: 'Mesa da área',         desc: 'Atualize os encargos administrativos do CSA', icon: UserCheck },
           { href: '/admin/eventos',    label: 'Gerenciar eventos',    desc: 'Cadastre e divulgue eventos da área',         icon: CalendarDays },
-        ].map(({ href, label, desc, icon: Icon }) => (
-          <Link key={href} href={href} className="card hover:shadow-md transition-shadow flex items-start gap-3">
-            <div className="w-8 h-8 bg-slate-100 rounded-lg flex items-center justify-center flex-shrink-0">
-              <Icon size={16} className="text-slate-600" />
+        ].map(({ href, label, desc, icon: Icon, highlight }) => (
+          <Link key={href} href={href} className={`card hover:shadow-md transition-shadow flex items-start gap-3 ${highlight ? 'border-blue-200 bg-blue-50' : ''}`}>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${highlight ? 'bg-blue-600' : 'bg-slate-100'}`}>
+              <Icon size={16} className={highlight ? 'text-white' : 'text-slate-600'} />
             </div>
             <div>
-              <div className="font-medium text-slate-900 text-sm">{label}</div>
-              <div className="text-xs text-slate-400 mt-0.5">{desc}</div>
+              <div className={`font-medium text-sm ${highlight ? 'text-blue-800' : 'text-slate-900'}`}>{label}</div>
+              <div className={`text-xs mt-0.5 ${highlight ? 'text-blue-600' : 'text-slate-400'}`}>{desc}</div>
             </div>
           </Link>
         ))}

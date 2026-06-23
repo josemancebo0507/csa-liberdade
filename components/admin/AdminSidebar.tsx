@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { Users, Layers, UserCheck, CalendarDays, LogOut, Home, UserCog } from 'lucide-react'
+import { Users, Layers, UserCheck, CalendarDays, LogOut, Home, UserCog, BookOpen } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const links = [
@@ -10,6 +10,7 @@ const links = [
   { href: '/admin/subcomites',label: 'Subcomitês', icon: Layers },
   { href: '/admin/dados-da-area', label: 'Dados da Área', icon: UserCheck },
   { href: '/admin/eventos',   label: 'Eventos',    icon: CalendarDays },
+  { href: '/admin/atas',      label: 'Atas',       icon: BookOpen },
   { href: '/admin/usuarios',  label: 'Usuários',   icon: UserCog },
 ]
 

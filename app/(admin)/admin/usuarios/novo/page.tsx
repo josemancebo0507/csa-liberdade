@@ -24,7 +24,7 @@ export default async function NovoUsuarioPage() {
         Crie um acesso para um responsável de grupo, subcomitê ou administrador da área.
       </p>
       <div className="card max-w-xl">
-        <UsuarioForm grupos={grupos} subcomites={subcomites} />
+        <UsuarioForm grupos={grupos} subcomites={subcomites} todosGrupos={grupos} />
       </div>
     </div>
   )

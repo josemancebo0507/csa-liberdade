@@ -7,17 +7,19 @@ import type { Grupo, Subcomite } from '@/lib/types'
 interface Props {
   grupos: Grupo[]
   subcomites: Subcomite[]
+  todosGrupos?: Grupo[]
 }
 
-export default function UsuarioForm({ grupos, subcomites }: Props) {
+export default function UsuarioForm({ grupos, subcomites, todosGrupos }: Props) {
   const router = useRouter()
   const [form, setForm] = useState({
-    nome_servico: '',
-    email:        '',
-    senha:        '',
-    tipo:         'chave_grupo',
-    grupo_id:     '',
-    subcomite_id: '',
+    nome_servico:       '',
+    email:              '',
+    senha:              '',
+    tipo:               'chave_grupo',
+    grupo_id:           '',
+    subcomite_id:       '',
+    grupo_de_escolha:   '',
   })
   const [showSenha, setShowSenha] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -30,10 +32,14 @@ export default function UsuarioForm({ grupos, subcomites }: Props) {
     setLoading(true)
     setErro('')
 
+    const payload = {
+      ...form,
+      grupo_de_escolha: form.grupo_de_escolha || null,
+    }
     const res = await fetch('/api/usuarios', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
+      body: JSON.stringify(payload),
     })
 
     const json = await res.json()
@@ -103,6 +109,17 @@ export default function UsuarioForm({ grupos, subcomites }: Props) {
             <option value="">Selecione o subcomitê...</option>
             {subcomites.map(s => <option key={s.id} value={s.id}>{s.nome}</option>)}
           </select>
+        </div>
+      )}
+
+      {(todosGrupos ?? grupos).length > 0 && (
+        <div>
+          <label className="form-label">Grupo de escolha</label>
+          <select className="form-select" value={form.grupo_de_escolha} onChange={e => set('grupo_de_escolha', e.target.value)}>
+            <option value="">Nenhum (selecionar na ata)</option>
+            {(todosGrupos ?? grupos).map(g => <option key={g.id} value={g.id}>{g.nome}</option>)}
+          </select>
+          <p className="text-xs text-slate-400 mt-1">Grupo pré-selecionado ao registrar uma nova ata</p>
         </div>
       )}
 

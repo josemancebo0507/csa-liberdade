@@ -10,7 +10,7 @@ const supabaseAdmin = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { nome_servico, email, senha, tipo, grupo_id, subcomite_id } = await req.json()
+    const { nome_servico, email, senha, tipo, grupo_id, subcomite_id, grupo_de_escolha } = await req.json()
 
     if (!nome_servico || !email || !senha || !tipo) {
       return NextResponse.json({ error: 'Campos obrigatórios faltando.' }, { status: 400 })
@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
     // 2. Cria o perfil na tabela usuarios
     const { data: usuario, error: usuarioError } = await supabaseAdmin
       .from('usuarios')
-      .insert({ auth_user_id: authUserId, nome_servico, tipo, ativo: true })
+      .insert({ auth_user_id: authUserId, nome_servico, tipo, ativo: true, grupo_de_escolha: grupo_de_escolha ?? null })
       .select()
       .single()
 
