@@ -110,7 +110,7 @@ ${JSON.stringify(eventos.data ?? [], null, 2)}`
     const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
     const stream = await groq.chat.completions.create({
-      model:       'llama3-70b-8192',
+      model:       'llama-3.3-70b-versatile',
       messages: [
         { role: 'system', content: systemPrompt },
         ...history.slice(-6) as { role: 'user' | 'assistant'; content: string }[],
