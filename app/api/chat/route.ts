@@ -2,10 +2,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { getSystemPrompt } from '@/lib/chat-context'
 import { NextRequest } from 'next/server'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY!)
-
 export async function POST(req: NextRequest) {
   try {
+    if (!process.env.GOOGLE_AI_API_KEY) {
+      return Response.json({ error: 'Serviço de IA não configurado.' }, { status: 503 })
+    }
+
     const { message, history } = await req.json()
 
     if (!message?.trim()) {
@@ -14,8 +16,10 @@ export async function POST(req: NextRequest) {
 
     const systemPrompt = await getSystemPrompt()
 
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_AI_API_KEY)
+
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.0-flash',
       systemInstruction: systemPrompt,
       generationConfig: {
         maxOutputTokens: 500,
@@ -59,16 +63,15 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     console.error('[/api/chat]', error)
 
-    const msg = error instanceof Error ? error.message : ''
+    const msg     = error instanceof Error ? error.message : String(error)
     const isQuota = msg.includes('429') || msg.includes('quota') || msg.includes('RESOURCE_EXHAUSTED')
 
-    return Response.json(
-      {
-        error: isQuota
-          ? 'O assistente está com muitas solicitações no momento. Tente novamente em alguns minutos.'
-          : 'Desculpe, não consegui processar sua pergunta agora. Tente novamente em instantes.',
-      },
-      { status: isQuota ? 429 : 500 }
-    )
+    const userMsg = isQuota
+      ? 'O assistente está com muitas solicitações no momento. Tente novamente em alguns minutos.'
+      : process.env.NODE_ENV === 'development'
+        ? `[dev] ${msg}`
+        : 'Desculpe, não consegui processar sua pergunta agora. Tente novamente em instantes.'
+
+    return Response.json({ error: userMsg }, { status: isQuota ? 429 : 500 })
   }
 }
