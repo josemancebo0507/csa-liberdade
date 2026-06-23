@@ -96,16 +96,16 @@ DATA ATUAL: ${now.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric',
 DIA DA SEMANA: ${dias[now.getDay()]}
 
 GRUPOS ATIVOS:
-${JSON.stringify(gruposData, null, 2)}
+${JSON.stringify(gruposData)}
 
 SUBCOMITÊS ATIVOS:
-${JSON.stringify(subcomitesData, null, 2)}
+${JSON.stringify(subcomitesData)}
 
 MESA DA ÁREA:
-${JSON.stringify(mesaData, null, 2)}
+${JSON.stringify(mesaData)}
 
 PRÓXIMOS EVENTOS:
-${JSON.stringify(eventos.data ?? [], null, 2)}`
+${JSON.stringify(eventos.data ?? [])}`
 
   cache = { systemPrompt, cachedAt: agora }
   return systemPrompt
