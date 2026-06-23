@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { createAdminClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/server'
 import Groq from 'groq-sdk'
 
 // Remove contato field from servers where contato_publico is not true
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: 'Serviço de IA não configurado.' }, { status: 503 })
     }
 
-    const supabase = await createAdminClient()
+    const supabase = createServiceClient()
     const today    = new Date().toISOString().split('T')[0]
 
     const [grupos, subcomites, mesa, eventos] = await Promise.all([
@@ -138,9 +138,9 @@ ${JSON.stringify(eventos.data ?? [], null, 2)}`
     )
   } catch (err) {
     console.error('[/api/chat]', err)
-    return Response.json(
-      { error: 'Desculpe, não consegui processar sua pergunta agora. Tente novamente em instantes.' },
-      { status: 500 }
-    )
+    const devMessage = process.env.NODE_ENV === 'development' && err instanceof Error
+      ? `[dev] ${err.message}`
+      : 'Desculpe, não consegui processar sua pergunta agora. Tente novamente em instantes.'
+    return Response.json({ error: devMessage }, { status: 500 })
   }
 }

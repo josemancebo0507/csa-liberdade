@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 
 const SUPABASE_URL = 'https://ehbosnplrsixaloivtbe.supabase.co'
@@ -18,6 +19,13 @@ export async function createClient() {
         } catch {}
       },
     },
+  })
+}
+
+// Direct service-role client without cookie handling — use in Route Handlers
+export function createServiceClient() {
+  return createSupabaseClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false },
   })
 }
 
