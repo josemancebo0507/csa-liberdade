@@ -65,24 +65,27 @@ Novos grupos são geocodificados automaticamente ao salvar no painel admin.
 
 O portal público inclui um chatbot flutuante que responde perguntas dos visitantes com base nos dados reais do banco.
 
-**Tecnologia:** [Groq API](https://console.groq.com) com modelo `llama3-70b-8192` (gratuito no plano Free).
+**Tecnologia:** [Google AI Studio](https://aistudio.google.com) com modelo `gemini-1.5-flash` (plano gratuito: ~1 500 requisições/dia e ~1 M tokens/dia).
 
 **Variável de ambiente necessária:**
 ```
-GROQ_API_KEY=gsk_...
+GOOGLE_AI_API_KEY=AIza...
 ```
 Adicionar em `.env.local` para desenvolvimento e nas variáveis de ambiente da Vercel para produção.
 
 **Como criar a chave:**
-1. Acesse [console.groq.com](https://console.groq.com)
-2. Crie uma conta gratuita
-3. Vá em **API Keys → Create API Key**
-4. Copie a chave e adicione como `GROQ_API_KEY`
+1. Acesse [aistudio.google.com](https://aistudio.google.com)
+2. Faça login com sua conta Google
+3. Clique em **Get API key → Create API key**
+4. Copie a chave e adicione como `GOOGLE_AI_API_KEY`
+
+**Cache de contexto:**
+Os dados do banco (grupos, subcomitês, mesa, eventos) são buscados uma vez e mantidos em memória por 5 minutos. Perguntas em sequência reaproveitam o mesmo contexto, reduzindo consumo de tokens e latência.
 
 **Privacidade e segurança:**
 - O chatbot é **somente leitura** — nunca modifica dados
-- Contatos de servidores com `contato_publico = false` são removidos dos dados antes de serem enviados ao modelo
-- A chave Groq é usada apenas no servidor (Route Handler), nunca exposta ao navegador
+- Contatos de servidores com `contato_publico = false` são removidos antes de enviar ao modelo
+- A chave da API é usada apenas no servidor (Route Handler), nunca exposta ao navegador
 
 ## Páginas públicas
 | Rota | Descrição |

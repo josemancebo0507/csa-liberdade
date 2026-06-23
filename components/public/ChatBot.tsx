@@ -64,7 +64,9 @@ export default function ChatBot() {
         body:    JSON.stringify({ message: text, history }),
       })
 
-      if (!response.ok) {
+      // JSON significa erro do servidor (4xx / 5xx); text/plain é o stream normal
+      const contentType = response.headers.get('content-type') ?? ''
+      if (contentType.includes('application/json')) {
         const err = await response.json()
         setMessages(prev => [
           ...prev,
